@@ -60,6 +60,7 @@ bintray {
         repo = "$sdk_repo_name"
         name = "$sdk_repo_name"
         userOrg = 'sgallese-oss'
+        licenses = ['Apache-2.0']
         version {
             name = "$sdk_version_name"
             released = new Date()
