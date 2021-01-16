@@ -1,6 +1,27 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+    int major = 1
+    int minor = 1
+    int patch = 1
+    boolean isSnapshot = false
+
+    String snapshotString = isSnapshot ? '-SNAPSHOT' : ""
+
+    ext {
+        test_app_version_code = 1
+        test_app_version_name = "1.1.1"
+    }
+
+    ext {
+        sdk_version_code = 10000 * major + 100 * minor + patch
+        sdk_version_name = "$major.$minor.$patch$snapshotString"
+        sdk_package_name = 'com.haystackreviews.mylibrary'
+        sdk_repo_name = 'bintray-circleci-test-private'
+    }
+
     ext.kotlin_version = "1.4.21"
+    ext.gradle_bintray_plugin_version = '1.8.4'
+
     repositories {
         google()
         jcenter()
@@ -8,6 +29,8 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:4.1.1"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:$gradle_bintray_plugin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

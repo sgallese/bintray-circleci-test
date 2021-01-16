@@ -1,0 +1,69 @@
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+def bintrayPropertiesFile
+try {
+    bintrayPropertiesFile = file('../bintray.properties', PathValidation.EXISTS)
+} catch (InvalidUserDataException exception) {
+    bintrayPropertiesFile = null
+}
+
+def bintrayProperties = new Properties()
+if (bintrayPropertiesFile != null) {
+    bintrayProperties.load(new FileInputStream(bintrayPropertiesFile))
+}
+
+ext.loadBintrayProperty = { String key ->
+    def localPropertyValue = bintrayProperties[key]
+    def systemPropertyValue = System.getenv(key)
+    return localPropertyValue != null ? localPropertyValue : systemPropertyValue
+}
+
+publishing {
+    publications {
+        MyLibraryPublication(MavenPublication) {
+            artifact("$buildDir/outputs/aar/mylibrary-release.aar")
+            groupId "$sdk_package_name"
+            artifactId "$sdk_repo_name"
+            version "$sdk_version_name"
+
+            pom.withXml {
+                def dependenciesNode = asNode().getAt('dependencies')[0] ?: asNode().appendNode('dependencies')
+
+                // Iterate over the implementation dependencies (we don't want the test ones),
+                // adding a <dependency> node for each
+                configurations.implementation.allDependencies.each {
+                    // Ensure dependencies such as fileTree are not included in the pom.
+                    if (it.name != 'unspecified') {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = loadBintrayProperty('BINTRAY_USER')
+    key = loadBintrayProperty('BINTRAY_KEY')
+    publications = ['MyLibraryPublication']
+    // Whether to run this as dry-run, without deploying
+    dryRun = false
+    // Whether to override version artifacts already published
+    override = false
+    // Whether version should be auto published after an upload
+    publish = false
+    pkg {
+        repo = "$sdk_repo_name"
+        name = "$sdk_repo_name"
+        userOrg = 'sgallese-oss'
+        version {
+            name = "$sdk_version_name"
+            released = new Date()
+            vcsTag = "$sdk_version_name"
+        }
+    }
+}
