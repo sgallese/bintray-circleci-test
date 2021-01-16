@@ -61,6 +61,7 @@ bintray {
         name = "$sdk_repo_name"
         userOrg = 'sgallese-oss'
         licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/sgallese/bintray-circleci-test.git'
         version {
             name = "$sdk_version_name"
             released = new Date()
