@@ -55,7 +55,7 @@ bintray {
     // Whether to override version artifacts already published
     override = false
     // Whether version should be auto published after an upload
-    publish = false
+    publish = true
     pkg {
         repo = "$sdk_repo_name"
         name = "$sdk_repo_name"

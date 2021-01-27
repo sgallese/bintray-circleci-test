@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  publish:
     working_directory: ~/code
     docker:
       - image: circleci/android:api-29
@@ -31,6 +31,11 @@ jobs:
           command: ./gradlew clean :app:assembleDebug
 workflows:
   version: 2
-  commit:
+  release:
     jobs:
-      - build
+      - publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

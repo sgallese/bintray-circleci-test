@@ -1,20 +1,26 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    int major = 1
-    int minor = 1
-    int patch = 1
-    boolean isSnapshot = false
+    String tag = System.getenv('CIRCLE_TAG') ?: 'v0.0.0'
+    String removeV = tag.substring(1) // 'v1.2.3' -> '1.2.3'
+    def versionReleaseSplit = removeV.split("-", 2) // '1.2.3-rc1' -> ['1.2.3' , 'rc1']
 
-    String snapshotString = isSnapshot ? '-SNAPSHOT' : ""
+    def semanticPattern = ~/(\d+).(\d+).(\d+)/
+    def semanticMatcher = versionReleaseSplit[0] =~ semanticPattern // '1.2.3' -> [['1.2.3', '1', '2', '3']]
+    int major = Integer.valueOf(semanticMatcher[0][1])
+    int minor = Integer.valueOf(semanticMatcher[0][2])
+    int patch = Integer.valueOf(semanticMatcher[0][3])
+
+    String release = versionReleaseSplit.length > 1 ? versionReleaseSplit[1] : ""
+    int releaseIntRemoveRc = release.size() > 2 ? release.substring(2).toInteger() : 0 // 'rc1' -> 1 (defaults to 0)
+    String releaseString = release.isEmpty() ? '' : "-$release" // 'rc1' -> '-rc1' (defaults to '')
 
     ext {
-        test_app_version_code = 1
-        test_app_version_name = "1.1.1"
-    }
+        sdk_version_code = (10_000_000 * major) + (10_000 * minor) + (100 * patch) + releaseIntRemoveRc
+        sdk_version_name = "$major.$minor.$patch$releaseString"
 
-    ext {
-        sdk_version_code = 10000 * major + 100 * minor + patch
-        sdk_version_name = "$major.$minor.$patch$snapshotString"
+        test_app_version_code = sdk_version_code
+        test_app_version_name = sdk_version_name
+
         sdk_package_name = 'com.haystackreviews.mylibrary'
         sdk_repo_name = 'bintray-circleci-test-private'
     }
@@ -27,9 +33,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:4.1.1"
+        classpath "com.android.tools.build:gradle:4.1.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:$gradle_bintray_plugin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
