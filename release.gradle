@@ -1,0 +1,62 @@
+ext.versionAndRelease = {
+    String tag = System.getenv('CIRCLE_TAG') ?: 'v0.0.0'
+    String removeV = tag.substring(1) // 'v1.2.3' -> '1.2.3'
+    def versionReleaseSplit = removeV.split("-", 2) // '1.2.3-rc1' -> ['1.2.3' , 'rc1']
+    return versionReleaseSplit
+}
+
+ext.versionArray = {
+    def versionReleaseSplit = versionAndRelease()
+    def semanticPattern = ~/(\d+).(\d+).(\d+)/
+    def semanticArray = versionReleaseSplit[0] =~ semanticPattern // '1.2.3' -> [['1.2.3', '1', '2', '3']]
+    return semanticArray
+}
+
+ext.majorVersion = {
+    return Integer.valueOf(versionArray()[0][1]) // [['1.2.3', '1', '2', '3']] -> 1
+}
+
+ext.minorVersion = {
+    return Integer.valueOf(versionArray()[0][2]) // [['1.2.3', '1', '2', '3']] -> 2
+}
+
+ext.patchVersion = {
+    return Integer.valueOf(versionArray()[0][3]) // [['1.2.3', '1', '2', '3']] -> 3
+}
+
+ext.isReleaseCandidate = {
+    def versionReleaseSplit = versionAndRelease()
+    return versionReleaseSplit.length > 1 // ['1.2.3' , 'rc1'] -> true
+}
+
+ext.release = {
+    def versionReleaseSplit = versionAndRelease()
+    return isReleaseCandidate() ? versionReleaseSplit[1] : "" // ['1.2.3' , 'rc1'] -> 'rc1' (defaults to '')
+}
+
+ext.releaseVersion = {
+    String release = release()
+    int releaseIntRemoveRc = release.size() > 2 ? release.substring(2).toInteger() : 0 // 'rc1' -> 1 (defaults to 0)
+    return releaseIntRemoveRc
+}
+
+ext.releaseAffix = {
+    String release = release()
+    return release.isEmpty() ? '' : "-$release" // 'rc1' -> '-rc1' (defaults to '')
+}
+
+ext.sdkVersionCode = {
+    return (10_000_000 * majorVersion()) + (10_000 * minorVersion()) + (100 * patchVersion()) + releaseVersion()
+}
+
+ext.sdkVersionName = {
+    return "${majorVersion()}.${minorVersion()}.${patchVersion()}${releaseAffix()}"
+}
+
+ext.sdkPackageName = {
+    return isReleaseCandidate() ? 'bintray-circleci-test-private' : 'bintray-circleci-test-public'
+}
+
+ext.sdkRepoName = {
+    return 'com.haystackreviews.mylibrary'
+}
