@@ -1,6 +1,8 @@
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
+apply from: '../release.gradle'
+
 def bintrayPropertiesFile
 try {
     bintrayPropertiesFile = file('../bintray.properties', PathValidation.EXISTS)
@@ -23,9 +25,9 @@ publishing {
     publications {
         MyLibraryPublication(MavenPublication) {
             artifact("$buildDir/outputs/aar/mylibrary-release.aar")
-            groupId "$sdk_package_name"
-            artifactId "$sdk_repo_name"
-            version "$sdk_version_name"
+            groupId "${sdkPackageName()}"
+            artifactId "${sdkRepoName()}"
+            version "${sdkVersionName()}"
 
             pom.withXml {
                 def dependenciesNode = asNode().getAt('dependencies')[0] ?: asNode().appendNode('dependencies')
@@ -57,15 +59,15 @@ bintray {
     // Whether version should be auto published after an upload
     publish = true
     pkg {
-        repo = "$sdk_repo_name"
-        name = "$sdk_repo_name"
+        repo = "${sdkRepoName()}"
+        name = "${sdkRepoName()}"
         userOrg = 'sgallese-oss'
         licenses = ['Apache-2.0']
         vcsUrl = 'https://github.com/sgallese/bintray-circleci-test.git'
         version {
-            name = "$sdk_version_name"
+            name = "${sdkVersionName()}"
             released = new Date()
-            vcsTag = "$sdk_version_name"
+            vcsTag = "${sdkVersionName()}"
         }
     }
 }
