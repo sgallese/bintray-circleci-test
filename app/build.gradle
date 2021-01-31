@@ -41,7 +41,8 @@ android {
 
     signingConfigs {
         uploadKeyConfig {
-            def keystoreFile = new File('../.signing/release.jks')
+            def keystoreFile = new File("${project.rootDir}/.signing/release.jks")
+            println keystoreFile.exists()
             if (keystoreFile.exists()) {
                 storeFile keystoreFile
             }
@@ -57,7 +58,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             firebaseAppDistribution {
-                serviceCredentialsFile="../google-services-account.json"
+                serviceCredentialsFile="${project.rootDir}/google-services-account.json"
                 groups="android-testers"
             }
 
