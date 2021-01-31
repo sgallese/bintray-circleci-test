@@ -5,6 +5,26 @@ plugins {
     id 'com.google.firebase.appdistribution'
 }
 
+apply from: '../release.gradle'
+
+def keystorePropertiesFile
+try {
+    keystorePropertiesFile = file('../keystore.properties', PathValidation.EXISTS)
+} catch (InvalidUserDataException exception) {
+    keystorePropertiesFile = null
+}
+
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile != null) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+ext.loadKeystoreProperty = { String key ->
+    def localPropertyValue = keystoreProperties[key]
+    def systemPropertyValue = System.getenv(key)
+    return localPropertyValue != null ? localPropertyValue : systemPropertyValue
+}
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -13,16 +33,35 @@ android {
         applicationId "com.haystackreviews.bintray_circleci_test"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        versionCode sdkVersionCode()
+        versionName "${sdkVersionName()}"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        uploadKeyConfig {
+            def keystoreFile = new File('../.signing/release.jks')
+            if (keystoreFile.exists()) {
+                storeFile keystoreFile
+            }
+            storePassword loadKeystoreProperty('STORE_PASSWORD')
+            keyAlias loadKeystoreProperty('KEY_ALIAS')
+            keyPassword loadKeystoreProperty('KEY_PASSWORD')
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            firebaseAppDistribution {
+                serviceCredentialsFile="../google-services-account.json"
+                groups="android-testers"
+            }
+
+            signingConfig signingConfigs.uploadKeyConfig
         }
     }
     compileOptions {

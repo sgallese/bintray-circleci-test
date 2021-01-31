@@ -27,8 +27,11 @@ jobs:
           name: Upload Library
           command: ./gradlew bintrayUpload
       - run:
-          name: Build APK
-          command: ./gradlew clean :app:assembleDebug
+          name: Build Test APK
+          command: ./gradlew :app:assembleRelease
+      - run:
+          name: Distribute Test APK on Firebase
+          command: ./gradlew appDistributionUploadRelease
 workflows:
   version: 2
   release:

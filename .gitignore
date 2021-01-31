@@ -13,4 +13,16 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# If we ever need to publish to bintray locally
 bintray.properties
+
+# Place the JKS keys in here if we ever need to sign an APK locally
+.signing
+
+# Key credentials we ever need to sign an APK locally
+keystore.properties
+
+# Our Google Services Cloud key if we ever need to push to Firebase App Distribution locally
+google-services-account.json
+
