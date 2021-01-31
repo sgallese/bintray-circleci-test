@@ -23,6 +23,13 @@ allprojects {
     repositories {
         google()
         jcenter()
+
+        maven {
+            url "https://dl.bintray.com/sgallese-oss/bintray-circleci-test-public"
+        }
+        maven {
+            url "https://dl.bintray.com/sgallese-oss/bintray-circleci-test-private"
+        }
     }
 }
 
