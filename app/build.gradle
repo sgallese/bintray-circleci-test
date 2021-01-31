@@ -42,6 +42,7 @@ android {
     signingConfigs {
         uploadKeyConfig {
             def keystoreFile = new File('../.signing/release.jks')
+            println keystoreFile
             if (keystoreFile.exists()) {
                 storeFile keystoreFile
             }
