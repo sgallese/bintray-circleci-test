@@ -15,17 +15,26 @@ jobs:
       #         command: sudo chmod +x ./gradlew
       - run:
           name: Download Dependencies
-          command: ./gradlew androidDependencies
+          command: ./gradlew :mylibrary:androidDependencies
       - save_cache:
           paths:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Add Google Services Account json
+          command: base64 -d <<< $GOOGLE_SERVICES_ACCOUNT > google-services-account.json
+      - run:
+          name: Add release signing key
+          command: base64 -d <<< $KEY_FILE > .signing/release.jks
       - run:
           name: Build Library
           command: ./gradlew clean :mylibrary:build
       - run:
           name: Upload Library
           command: ./gradlew bintrayUpload
+      - run:
+          name: Wait to ensure library is published
+          command: sleep 10
       - run:
           name: Build Test APK
           command: ./gradlew :app:assembleRelease
